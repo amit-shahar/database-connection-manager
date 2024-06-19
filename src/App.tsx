@@ -1,21 +1,50 @@
-import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { ThemeProvider } from '@mui/material/styles';
-import CssBaseline from  '@mui/material/CssBaseline';
-import theme from './theme';
-import HomePage from './pages/HomePage';
-import DetailsPage from './pages/DetailsPage';
+import React, { FunctionComponent, useState, useEffect, useMemo } from 'react';
+import axios from 'axios';
 
-const App: React.FC = () => (
-  <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Router>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/details/:id" element={<DetailsPage />} />
-        </Routes>
-      </Router>
-    </ThemeProvider>
-);
+interface IProps {}
+
+type status = 'WORKING' | 'NOT WORKING' | 'LOADING'
+
+const statusInfo = {
+  'WORKING': {
+    statusMessage: 'Fake server is working',
+    statusColor: 'green',
+  },
+  'NOT WORKING': {
+    statusMessage: 'Fake server is not working',
+    statusColor: 'red',
+  },
+  'LOADING': {
+    statusMessage: 'Loading...',
+    statusColor: 'yellow',
+  },
+};
+
+const App: FunctionComponent<IProps> = () => {
+  const [serverStatus, setServerStatus] = useState<status>('LOADING');
+
+  const { statusMessage, statusColor } = useMemo(() => statusInfo[serverStatus], [serverStatus]);
+
+  useEffect(() => {
+    const fakeServerUrl = 'http://localhost:4000/databases';
+
+    axios.get(fakeServerUrl)
+      .then((response) => {
+        setServerStatus('WORKING');
+        console.log(response.data);
+      })
+      .catch(() => {
+        setServerStatus('NOT WORKING');
+      });
+  }, []);
+
+  return (
+    <div>
+      <h5 style={{ color: statusColor }}>
+        {statusMessage}
+      </h5>
+    </div>
+  );
+}
+
 export default App;
-
